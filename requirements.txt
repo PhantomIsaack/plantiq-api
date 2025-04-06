@@ -1,0 +1,6 @@
+Flask
+tensorflow
+Pillow
+numpy
+requests
+openai
