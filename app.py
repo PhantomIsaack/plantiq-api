@@ -7,7 +7,6 @@ from PIL import Image
 import uuid
 from deepseek_api import generar_informe
 
-
 # Configuración inicial
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -41,8 +40,6 @@ def predecir_imagen(ruta_imagen):
     else:
         return "No se reconoce como manzana"
 
-
-
 # Ruta principal
 @app.route('/')
 def inicio():
@@ -65,23 +62,26 @@ def analizar():
 
     return jsonify({'resultado': resultado})
 
+# Pregunta después del análisis (sin validación de tema)
 @app.route('/preguntar', methods=['POST'])
 def preguntar():
     pregunta = request.form.get('pregunta')
     contexto = request.form.get('contexto')
 
-    # Validación sencilla
-    if any(palabra in pregunta.lower() for palabra in ["riego", "suelo", "clima", "fertilizante", "temperatura", "fruta", "sembrar", "cultivar"]):
-        prompt = f"Tema: {contexto}\n\nPregunta del usuario: {pregunta}"
-        respuesta = generar_informe(prompt)
-        return respuesta
-    else:
-        return "❌ Esa pregunta no está en nuestro enfoque."
+    print("📩 Pregunta recibida:", pregunta)
 
+    if not pregunta:
+        return "❌ No se recibió ninguna pregunta.", 400
+
+    prompt = f"Tema: {contexto}\n\nPregunta del usuario: {pregunta}"
+    respuesta = generar_informe(prompt)
+    return respuesta
+
+# Chat general sin restricciones
 @app.route('/chat', methods=['POST'])
 def chat():
     pregunta = request.form.get('pregunta')
-    print("📩 Pregunta recibida:", pregunta)
+    print("📩 Pregunta recibida (chat):", pregunta)
 
     if not pregunta:
         return "❌ No se recibió ninguna pregunta.", 400
@@ -89,15 +89,7 @@ def chat():
     respuesta = generar_informe(f"Tengo esta duda agrícola: {pregunta}")
     return respuesta
 
-
-import os
-
-if __name__ == "__main__":
+# Ejecutar servidor (compatible con Render)
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-# Ejecutar servidor
-if __name__ == '__main__':
-    app.run(debug=True)
